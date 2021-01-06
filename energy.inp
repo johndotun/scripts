@@ -1,0 +1,67 @@
+* Virial function
+*
+  
+!prnlev 6 
+bomblev -2 ! for interactive runs
+! bomblev 0 
+!SET paramdir1 /data/apps/c33b2/support/aspara
+!SET maindir /data/wh/clpy/tmd/analysis2
+!set dcddir /data/wh/clpy/tmd/dcd
+!SET condir @maindir/contacts
+
+open read card unit 3 name toph19_eef1.inp
+read rtf unit 3 card
+close unit 3
+
+open read card unit 3 name param19_eef1.inp
+read para unit 3 card
+close unit 3
+
+open unit 3 read card name grp94-dimer-apo-bound-eef1-min-norest.psf
+read psf card unit 3
+close unit 3
+
+open unit 3 read card name grp94-pep-apo-capture_@trajno.cor
+read coor card unit 3
+close unit 3
+
+!============================definition part================================
+!define loop sele resid 89 : 92 end 
+!define prot sele segid SSRA end
+!define inter1 sele resid 393 .or. resid 80 .or. resid 68 end 
+!define inter2 sele resid 321 .or. resid 286 end 
+!===========================================================================
+
+eef1 setup temp 298.15 unit 93 name solvpar.inp
+update ctonnb 7. ctofnb 9. cutnb 10. group rdie
+update inbfrq 1 ihbfrq 0
+
+
+!define loops sele segid PROA .or. segid PROB .or. segid PROC - 
+! .or. segid PROD .or. segid PROE .or. segid PROF end
+
+
+open write unit 22 card name grp94-energy_@trajno.dat
+write title unit 22
+*# tot energy between ssra & loops
+*# tot EL1 EL2 EL3 EL4 EL5 EL6
+*# zcoordinates resid 11 12 13
+
+
+    ! ================== open frames loop ====================
+
+interaction  sele segid GA end sele segid PEP end
+calc e0 = ?ENER
+
+interaction sele segid GB end sele segid PEP end
+calc e1 = ?ENER
+
+write title unit 22 
+*  @e0 @e1
+ 
+label nostruct
+system "echo "Must specify trajectory number" "
+
+label nostruct
+system "echo "Must specify trajectory number" "
+

@@ -1,0 +1,45 @@
+* CHARMM script to align the closed and opened p97 
+*
+set paramdir /home/kravatan/charmm_files/c36b2/toppar/ 
+
+open read card unit 3 name toph19_eef1.inp
+read rtf unit 3 card
+close unit 3
+
+open read card unit 3 name param19_eef1.inp
+read para unit 3 card
+close unit 3
+
+
+
+bomlev -5
+prnlev 5
+wrnlev 2
+
+open unit 1 read card name grp94-chaina-eef1.psf
+read psf card unit 1 appen
+close unit 1
+
+open unit 2 read card name grp94-chaina-eef1.cor
+read coor card unit 2 appen
+close unit 2
+
+open unit 3 read card name grp94-chainb-eef1.psf
+read psf card unit 3 appen
+close unit 3
+
+open unit 4 read card name grp94-chainb-eef1.cor
+read coor card unit 4 appen
+close unit 4
+
+open unit 16 write form name grp94-dimer-closed-eef1.cor
+write coor card unit 16
+close unit 16
+
+open write form unit 3 name grp94-dimer-closed-eef1.pdb
+write coor  pdb   unit  3
+close unit 3
+ 
+open write card unit 4 name grp94-dimer-closed-eef1.psf
+write psf card unit 4
+close unit 4

@@ -1,0 +1,198 @@
+* CHARMM script to align the closed and opened p97 
+*
+set paramdir /shared/kravatan_shared/for_john-paul/grp94 
+
+open read card unit 3 name toph19_eef1.inp
+read rtf unit 3 card
+close unit 3
+
+open read card unit 3 name param19_eef1.inp
+read para unit 3 card
+close unit 3
+
+
+
+bomlev -5
+prnlev 5
+wrnlev 2
+
+read sequence card
+* ankyrin repeat sequence - 6 repeats 
+*
+804
+Met Arg Ala Leu Trp Val Leu Gly Leu Cys -
+Cys Val Leu Leu Thr Phe Gly Ser Val Arg -
+Ala Asp Asp Glu Val Asp Val Asp Gly Thr -
+Val Glu Glu Asp Leu Gly Lys Ser Arg Glu -
+Gly Ser Arg Thr Asp Asp Glu Val Val Gln -
+Arg Glu Glu Glu Ala Ile Gln Leu Asp Gly -
+Leu Asn Ala Ser Gln Ile Arg Glu Leu Arg -
+Glu Lys Ser Glu Lys Phe Ala Phe Gln Ala -
+Glu Val Asn Arg Met Met Lys Leu Ile Ile -
+Asn Ser Leu Tyr Lys Asn Lys Glu Ile Phe -
+Leu Arg Glu Leu Ile Ser Asn Ala Ser Asp -
+Ala Leu Asp Lys Ile Arg Leu Ile Ser Leu -
+Thr Asp Glu Asn Ala Leu Ala Gly Asn Glu -
+Glu Leu Thr Val Lys Ile Lys Cys Asp Lys -
+Glu Lys Asn Leu Leu His Val Thr Asp Thr -
+Gly Val Gly Met Thr Arg Glu Glu Leu Val -
+Lys Asn Leu Gly Thr Ile Ala Lys Ser Gly -
+Thr Ser Glu Phe Leu Asn Lys Met Thr Glu -
+Ala Gln Glu Asp Gly Gln Ser Thr Ser Glu -
+Leu Ile Gly Gln Phe Gly Val Gly Phe Tyr -
+Ser Ala Phe Leu Val Ala Asp Lys Val Ile -
+Val Thr Ser Lys His Asn Asn Asp Thr Gln -
+His Ile Trp Glu Ser Asp Ser Asn Glu Phe -
+Ser Val Ile Ala Asp Pro Arg Gly Asn Thr -
+Leu Gly Arg Gly Thr Thr Ile Thr Leu Val -
+Leu Lys Glu Glu Ala Ser Asp Tyr Leu Glu -
+Leu Asp Thr Ile Lys Asn Leu Val Lys Lys -
+Tyr Ser Gln Phe Ile Asn Phe Pro Ile Tyr -
+Val Trp Ser Ser Lys Thr Glu Thr Val Glu -
+Glu Pro Met Glu Glu Glu Glu Ala Ala Lys -
+Glu Glu Lys Glu Asp Ser Asp Asp Glu Ala -
+Ala Val Glu Glu Glu Glu Glu Glu Lys Lys -
+Pro Lys Thr Lys Lys Val Glu Lys Thr Val -
+Trp Asp Trp Glu Leu Met Asn Asp Ile Lys -
+Pro Ile Trp Gln Arg Pro Ser Lys Glu Val -
+Glu Asp Asp Glu Tyr Lys Ala Phe Tyr Lys -
+Ser Phe Ser Lys Glu Ser Asp Asp Pro Met -
+Ala Tyr Ile His Phe Thr Ala Glu Gly Glu -
+Val Thr Phe Lys Ser Ile Leu Phe Val Pro -
+Thr Ser Ala Pro Arg Gly Leu Phe Asp Glu -
+Tyr Gly Ser Lys Lys Ser Asp Tyr Ile Lys - 
+Leu Tyr Val Arg Arg Val Phe Ile Thr Asp -
+Asp Phe His Asp Met Met Pro Lys Tyr Leu -
+Asn Phe Val Lys Gly Val Val Asp Ser Asp -
+Asp Leu Pro Leu Asn Val Ser Arg Glu Thr -
+Leu Gln Gln His Lys Leu Leu Lys Val Ile -
+Arg Lys Lys Leu Val Arg Lys Thr Leu Asp -
+Met Ile Lys Lys Ile Ala Asp Glu Lys Tyr -
+Asn Asp Thr Phe Trp Lys Glu Phe Gly Thr -
+Asn Ile Lys Leu Gly Val Ile Glu Asp His -
+Ser Asn Arg Thr Arg Leu Ala Lys Leu Leu -
+Arg Phe Gln Ser Ser His His Pro Ser Asp -
+Ile Thr Ser Leu Asp Gln Tyr Val Glu Arg -
+Met Lys Glu Lys Gln Asp Lys Ile Tyr Phe -
+Met Ala Gly Ser Ser Arg Lys Glu Ala Glu -
+Ser Ser Pro Phe Val Glu Arg Leu Leu Lys -
+Lys Gly Tyr Glu Val Ile Tyr Leu Thr Glu -
+Pro Val Asp Glu Tyr Cys Ile Gln Ala Leu -
+Pro Glu Phe Asp Gly Lys Arg Phe Gln Asn -
+Val Ala Lys Glu Gly Val Lys Phe Asp Glu -
+Ser Glu Lys Thr Lys Glu Ser Arg Glu Ala -
+Ile Glu Lys Glu Phe Glu Pro Leu Leu Asn -
+Trp Met Lys Asp Lys Ala Leu Lys Asp Lys -
+Ile Glu Lys Ala Val Val Ser Gln Arg Leu -
+Thr Glu Ser Pro Cys Ala Leu Val Ala Ser -
+Gln Tyr Gly Trp Ser Gly Asn Met Glu Arg -
+Ile Met Lys Ala Gln Ala Tyr Gln Thr Gly -
+Lys Asp Ile Ser Thr Asn Tyr Tyr Ala Ser -
+Gln Lys Lys Thr Phe Glu Ile Asn Pro Arg -
+His Pro Leu Ile Lys Asp Met Leu Arg Arg -
+Val Lys Glu Asp Glu Asp Asp Lys Thr Val -
+Ser Asp Leu Ala Val Val Leu Phe Glu Thr -
+Ala Thr Leu Arg Ser Gly Tyr Leu Leu Pro -
+Asp Thr Lys Ala Tyr Gly Asp Arg Ile Glu -
+Arg Met Leu Arg Leu Ser Leu Asn Ile Asp -
+Pro Asp Ala Lys Val Glu Glu Glu Pro Glu -
+Glu Glu Pro Glu Glu Thr Thr Glu Asp Thr -
+Thr Glu Asp Thr Glu Gln Asp Asp Glu Glu -
+Glu Met Asp Ala Gly Thr Asp Asp Glu Glu -
+Gln Glu Thr Val Lys Lys Ser Thr Ala Glu -
+Lys Asp Glu Leu 
+prnlev 6
+generate GA setup
+
+! rename atoms to ensure pdb compatibility with charmm
+
+rename atom cd1 select resname ile .and. type cd end
+rename atom oxt select type ot1 end
+rename atom 0 select ires ?nres .and. type ot2 end
+
+open unit 11 read form name grp94.a.pdb 
+read coor pdb unit 11 !offs 48
+close unit 11
+
+
+print coor sele type oxt end
+
+rename atom cd select resname ile .and. type cd1 end
+rename atom ot1 select type oxt end
+rename atom ot2 select ires ?nres .and. type o end
+
+print coor sele all .and. .not. type H* end
+define nonH select .not. hydrogen end
+set nonHatoms = ?nsel
+define missing select .not. hydrogen .and. .not. initialized end
+set missingatoms = ?nsel
+
+calc fraction = (@nonHatoms - @missingatoms) / @nonHatoms
+if fraction le 0.8 goto toomanywrong
+
+print coor select missing end
+!Add missing coordinates
+ic para
+ic build
+
+coor init sele type H* end
+
+hbuild sele hydrogen end
+
+!coor orie mass
+!coor stat mass
+
+print coor sele .not. init end
+
+delete atoms sele ( resid 1 : 87 .or. - 
+resid 166 : 196 .or. resid 286 : 330 .or. resid 396 : 408  resid .or. resid 750:840) end
+
+!open write form unit 3 name grp94-chaina-polarh.pdb
+!write coor  pdb   unit  3
+!close unit 3
+
+
+open unit 1 write card name grp94-chaina-eef1.psf
+write psf unit 1 card
+close unit 1
+
+open unit 2 write card name grp94-chaina-eef1.cor
+write coor unit 2 card
+close unit 2
+
+
+stop
+
+
+
+
+
+
+
+read coor card unit 2  
+close unit 2 
+
+!define d2 sele resid 0:175 end
+!dele atom sele resid 1:450 end
+!generate d2 setup
+
+delete atoms sele resid -340:-270 end
+delete atoms sele segid HBP end 
+delete atoms sele type H* end
+rename resn HSD sele resn HSD end
+rename atom cd1 select resname ile .and. type cd end
+rename atom oxt select type ot1 end
+rename atom o select ires ?nres .and. type ot2 end
+
+open unit 1 write card name /home/brittany/p97-docking/mut2/p97d2_mut2_append_s.psf 
+write psf  end unit 1 card
+
+open unit 1 write card name /home/brittany/p97-docking/mut2/p97d2_mut_append_s.crd
+write coor unit 1 card
+
+open unit 1 write card name /home/brittany/p97-docking/mut2/p97d2_mut2_append_s.pdb
+write coor  pdb unit 1 card
+
+
+stop
+

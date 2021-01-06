@@ -1,0 +1,93 @@
+* Charmm script to read pdb file for hslu
+*
+bomblev -1
+set paramdir /home/kravatan/charmm_files/c36b2/toppar/
+
+open unit 1 read form name toph19_eef1.inp
+read rtf card unit 1
+close unit 1
+
+open unit 1 read form name param19_eef1.inp 
+read param card unit 1
+close unit 1
+
+ open unit 1 read card name grp94-dimer-apo-bound-eef1-min-norest.psf 
+ read psf card unit 1
+ close unit 1
+
+open unit 2 read card name grp94-pep-apo-capture_2.cor 
+read coor card unit 2  
+close unit 2
+
+
+prnlev 4
+wrnlev 2
+
+set dcdstep 0
+
+label loop_dcd
+
+open read unit 10  unform name tmd-pep-grp94-open.traj2.move1.dcd
+traj query unit 10
+set nframeskip = ?skip
+set nbegin = ?start
+set nframe = ?nfile
+set nstop1 = ?nstep
+calc nstop2 = @nbegin + @nstop1
+
+
+
+!stop
+
+traj firstu 10  nunit 1 begin @nbegin stop @nstop2 skip @nframeskip
+
+!set step @nmin
+set step 1
+
+
+label loop_frames
+traj read
+
+
+open write unit 13 card name sasa.grp94.open.frame@step.dat
+write title unit 13   
+*# sasa values for closing of grp94 from apo to atp
+* 
+ 
+
+
+
+coor surf acce RPRObe 1.4 sele  (all .and. .not. segid PEP) end
+
+
+
+set aa 1 
+label aaloop
+
+
+scalar wmain statistics sele resid @aa end 
+set sasam1 ?STOT
+
+write title unit 13
+* @aa @sasam1
+  
+incr aa by 1
+if @aa .le. 1172 goto aaloop
+
+close unit 13
+
+incr step by 1
+if step le @nframe goto loop_frames
+
+incr dcdstep by 1
+if dcdstep le @ndcd goto loop_dcd
+
+label nostruct
+system "echo "Must specify trajectory number" "
+
+
+STOP
+
+
+
+

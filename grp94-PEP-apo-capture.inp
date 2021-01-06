@@ -1,0 +1,160 @@
+* Charmm for implicit solvate the protein p97
+*
+! if ?NUMNODE .gt. 1 then 
+! echo "Test NOT performed."
+! stop
+!endif
+if ?aspener .ne. 1 then
+echo "Test NOT performed."
+stop
+endif
+
+Bomlev -1
+
+!SET cordir /data0/sam/implicit-capture-start-file/p97_2ssra-wt_pulling_traj@ntraj
+!SET paramdir /home/sam/implicit-capture
+
+open read card unit 3 name toph19_eef1.inp
+read rtf unit 3 card
+close unit 3
+
+open read card unit 3 name  param19_eef1.inp
+read para unit 3 card
+close unit 3
+
+OPEN UNIT 1 FORM READ NAME  grp94-dimer-apo-bound-eef1-min-norest.psf 
+READ PSF CARD UNIT 1
+CLOSE UNIT 1
+
+OPEN UNIT 1 FORM READ NAME  grp94-dimer-apo-bound-eef1-min-norest.cor
+READ COOR CARD UNIT 1
+CLOSE UNIT 1
+
+!define non-pore sele (( (prop X .lt. -20) .or. (prop X .gt. 20) .or. (prop Y .lt. -20) -
+!        .or. (prop Y .gt. 20) .or. (prop Z .gt. 25 ) .or. (prop Z .lt. -5) ) -
+!        .and. .not. segid SSRA) END
+
+! Here you need to define everything but your peptide (ie htpg chains a and b)
+! use the define example above to do this
+
+
+!coor stat sele non-pore end
+!print coor sele non-pore end
+
+! using the cons fix command (see below for template) fix your selection from above
+!cons fix sele non-pore end
+
+! IMPLICIT SOLVATION SETUP COMMAND
+! The nonbonded options below are part of the model
+
+eef1 setup temp 298.15 unit 93 name  solvpar.inp
+update ctonnb 7. ctofnb 9. cutnb 10. group rdie
+
+!skip incl asp
+
+faster ON
+shake bonh param tol 1.0e-8
+
+!cons fix sele .not. resid 562:578 end
+
+!mini SD nstep 50
+!mini ABNR nstep 1000000
+
+
+!This command prints out solvation free energy for each atom
+eef1 print
+
+! Set friction coefficient
+scalar fbeta set 5.0
+
+
+open unit 13 write form name grp94-PEP-apo-capture_@ntraj.kun
+open unit 14 write unform name grp94-PEP-apo-capture_@ntraj.dcd
+
+
+dynamics  strt              leap       langevin -
+ nstep     1500000 -! The number of steps to be taken.
+ timest    0.002 -! Time step for dynamics in picoseconds.
+                 -!  The default value is 0.001 picoseconds.
+ iunread     -1  -! Fortran unit from which the dynamics restart
+                 -! file should be read. A value of -1 means don't
+                 -! read any file
+ iunwrite      -1 -! Fortran unit on which the dynamics restart fil
+                 -! e for the present run is to be written. A valu
+                 -! e of -1 don't read any file. Formatted output.
+ firstt      300 -! The initial temperature at which the velociti
+                 -! es have to be assigned at to begin the dynami
+                 -! cs run. Important only for the initial stage
+                 -!of a dynamics run.
+ finalt     300  -! The desired final (equilibrium) temperature
+                 -! for the system. Important for all stages excep
+                 -! t initiation.
+! tstruc   375   -!The temperature at which the starting structure
+!                 -!has been equilibrated.  Used to assign velociti
+!                 -!es so that equal partition of energy will yield
+!                 -!the correct equilibrate temperature.  -999.
+!                 -! is a default which causes the program to
+!                 -!assign velocities at T=1.25*FIRSTT.
+ tconstant       -! false   Flag to indicate that constant
+                 -! temperature code will be used.
+ tcoupling  0.5 -! The coupling decay time in picoseconds for
+               - !the- temperature. A good value for this is 5 ps
+ trefer   300  - !TREFerence FINALT The reference temperature for
+               - ! constant temperature  simulations.
+ inbfrq   -1   - ! 50 The frequency of regenerating the
+               - ! non-bonded list.  INBFRQ = -1 --> all lists
+               - ! are updated when necessary (heuristic test).
+ iprfrq   10   - ! 100 The step frequency for calculating
+               - ! averages and rms fluctuations of the major
+               - ! energy values. If this number is less than
+               - ! NTRFRQ and NTRFRQ is not equal to 0, square
+              - !root of negative number errors will occur.
+ nprint   10000  -! 10     The step frequency for storing on KUNIT
+               -!as well as printing on unit 6, the energy data
+               -!of the dynamics run.
+ nsavc    10000 -! 10 The step frequency for writing coordinates.
+ nsavv    10000 -!10 The step frequency for writing velocities.
+ iuncrd   14   -! -1  Fortran unit on which the coordinates of the
+               -! dynamics ruN are to be saved. A value of -1 means
+               -! no coordinates should be written. Unformatted output.
+ iunvel  -1    -! -1 Fortran unit on which the velocities of the
+               -! dynamics run are to be saved. -1 means don't write.
+               -! Unformatted output.
+ wmin   1.50   -! !warning cutoff for minimum atom-atom distance
+ kunit    13   -!-1     Fortran unit on which the total energy and
+               -! some of its components along with the temperature
+               -! during the run are written using formatted output.
+ ihbfrq   0    -!50  The frequency of regenerating the hydrogen
+               -! bond list. Analogous to INBFRQ
+ ilbfrq   0    -! 50 The frequency for checking whether an atom is
+               -!  in the Langevin region, defined by RBUF, or not.
+ iasvel   1    -! assign velocity
+            -! the option for the choice of method for the
+            -! assignment of velocities during heating and
+            -! equilibration when IASORS is nonzero.  This option
+            -!  also controls the initial assignment of
+            -! velocities (when not RESTart) regardless of the
+            -! IASORS value.  .gt. 0 - gaussian distribution of
+            -! velocity. (+ve)
+ iasors   1 -! asssign or scale  0 scale not 0 assign
+ iseed    @iseed
+
+
+define asub sele segid GA .and. (resid  466 .or. resid 467 .or. resid 470 .or. resid 550) end         
+coor dist sele segid PEP end sele asub end
+
+define bsub sele segid GB .and. (resid  466 .or. resid 467 .or. resid 470 .or. resid 550) end
+coor dist sele segid PEP and sele bsub end
+
+open unit 19 write card name grp94-pep-apo-capture_@ntraj.cor
+write coor unit 19 card
+*coordinate of captured PEP
+*
+close unit 19   
+
+open unit 20 write card name grp94-pep-apo-capture_@ntraj.pdb
+write coor  pdb unit 20  card 
+*pdb of captured PEP
+*
+close unit 20   
+stop

@@ -1,0 +1,68 @@
+* Viria function
+*
+  
+!prnlev 6 
+!bomblev -2 ! for interactive runs
+ bomblev -0 
+set maindir /home/alaooj/grp94/grp94-2020-04-16/
+
+stream @maindir/toppar.str
+
+!open read card unit 3 name toph19_eef1.inp
+!read rtf unit 3 card
+!close unit 3
+
+!open read card unit 3 name param19_eef1.inp
+!read para unit 3 card
+!close unit 3
+
+!open unit 3 read card name htpg-dimer-bound-apo-eef1.psf
+open unit 3 read card name grp94-apo-min-del.psf
+read psf card unit 3
+close unit 3
+
+update inbfrq 1 ihbfrq 0
+
+set dcdstep 0
+
+label loop_dcd
+
+open read unit 10  unform name tmd-grp94-del-dcd
+
+traj query unit 10
+set nframeskip = ?skip
+set nbegin = ?start
+set nframe = ?nfile
+set nstop1 = ?nstep
+calc nstop2 = @nbegin + @nstop1
+
+traj firstu 10  nunit 1 begin @nbegin stop @nstop2 skip @nframeskip
+
+    ! ================== open frames loop ====================
+
+!set step @nmin
+set step 1
+
+
+label loop_frames
+traj read
+
+open unit 19 write card name coor/coor_closing/tmd-grp94-del-closing-frame@step.cor
+write coor unit 19 card
+close unit 19
+
+open unit 24 write card name coor/coor_closing/tmd-grp94-del-closing-frame@step.pdb
+write coor  pdb unit 24 card
+close unit 24
+
+incr step by 1
+if step le @nframe goto loop_frames
+
+incr dcdstep by 1 
+if dcdstep le @ndcd goto loop_dcd 
+
+label nostruct
+system "echo "Must specify trajectory number" "
+
+stop
+

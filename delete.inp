@@ -1,0 +1,18 @@
+*This script is just for dellecting some residues
+*
+set maindir /home/alaooj/grp94/grp94-2020-04-16
+stream toppar.str
+
+read psf card name grp94-apo-min.psf
+
+read coor card name grp94-@comp-min.crd
+
+delete atom sele resid 287:327 end
+
+write psf card name grp94-@comp-min-del.psf
+
+write coor card name grp94-@comp-min-del.crd
+
+write coor pdb card name grp94-@comp-min-del.pdb
+
+stop

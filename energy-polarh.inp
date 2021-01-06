@@ -1,0 +1,97 @@
+* Virial function
+*
+  
+set maindir /home/alaooj/grp94/grp94-2020-04
+
+stream @maindir/toppar.str
+
+bomlev -5
+prnlev 5
+wrnlev 2
+
+!open read card unit 3 name toph19_eef1.inp
+!read rtf unit 3 card
+!close unit 3
+
+!open read card unit 3 name param19_eef1.inp
+!read para unit 3 card
+!close unit 3
+
+open unit 3 read card name polarhcomp.psf
+read psf card unit 3
+close unit 3
+
+
+eef1 setup temp 298.15 unit 93 name @maindir/toppar/solvpar.inp
+update ctonnb 7. ctofnb 9. cutnb 10. group rdie
+update inbfrq 1 ihbfrq 0
+
+
+define region sele resid 574 .or. resid 575 .or. resid 578 .or. -
+ resid 654 .or. resid 658 .or. resid 661 .or. resid 662 end
+
+open write unit 22 card name energy-grp94-polarh.dat
+write title unit 22
+*# energy between ga, gb, region and pep
+
+    ! ================== open frames loop ====================
+set trajno 1
+label trajloop
+
+open unit 3 read card name polarhcomp.@trajno.cor
+read coor card unit 3
+close unit 3
+
+interaction  sele segid GA end sele segid PEP end
+calc e0 = ?ENER
+
+interaction sele segid GB end sele segid PEP end
+calc e1 = ?ENER
+
+interaction sele segid PEP end sele region end 
+calc e2 = ?ENER
+
+write title unit 22 
+* @trajno  @e0 @e1 @e2
+
+incre trajno by 1
+if trajno .lt. 2000
+goto trajloop
+ 
+label nostruct
+system "echo "Must specify trajectory number" "
+
+label nostruct
+system "echo "Must specify trajectory number" "
+
+
+stop
+
+
+!open write unit 22 card name capture@trajno/grp94-energy_@trajno.dat
+open write unit 22 card name energy-grp94-poharh.dat
+write title unit 22
+*# energy between ga, gb, region and pep
+
+
+
+    ! ================== open frames loop ====================
+
+interaction  sele segid GA end sele segid PEP end
+calc e0 = ?ENER
+
+interaction sele segid GB end sele segid PEP end
+calc e1 = ?ENER
+
+interaction sele segid PEP end sele region end
+calc e2 = ?ENER
+
+write title unit 22 
+*  @e0 @e1 @e2
+ 
+label nostruct
+system "echo "Must specify trajectory number" "
+
+label nostruct
+system "echo "Must specify trajectory number" "
+

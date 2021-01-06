@@ -1,0 +1,214 @@
+* Charmm for implicit solvate the protein groel
+
+! if ?NUMNODE .gt. 1 then 
+! echo "Test NOT performed."
+! stop
+!endif
+if ?aspener .ne. 1 then
+echo "Test NOT performed."
+stop
+endif
+
+! input e.g comp=grp94-closed-min-del-equi
+set maindir /home/alaooj/grp94/grp94-2020-04-16
+
+Bomlev 0
+prnlev 3 
+
+stream toppar.str
+
+
+! put in your psf that you used in the capture
+! this should include hsp90 open and bound peptide
+OPEN UNIT 1 FORM READ NAME grp94-apo-min-del.psf 
+READ PSF CARD UNIT 1
+CLOSE UNIT 1
+
+
+! put in the coordinates (output) from the capture)
+OPEN UNIT 1 FORM READ NAME grp94-adp-min-del-equi.crd
+READ COOR CARD UNIT 1
+CLOSE UNIT 1
+
+! IMPLICITetup temp 298.15 unit 93 name solvpar.inp
+eef1 setup temp 298 unit 93 name toppar/solvpar.inp
+update ctonnb 7. ctofnb 9. cutnb 10. group rdie
+update inbfrq 1 ihbfrq 0
+
+define active sele (segid GA .or. segid GB) end
+
+
+!## GET THE RMSD of the active subunit ##
+
+coor copy comp 
+
+! %% check stats of coordinates %% !
+coor stat 
+coor stat comp
+
+!## Here you need to read in coordinates for the closed state
+!## if you did a setup where you put the peptide together with
+!## the closed state then use those - we aren't using the peptide
+!## coordinates but witout them charmm will complain
+!## unsure if its a fatal error so you can try without peptide coor
+!## and closed state
+
+open unit 4 read card name @comp.crd
+read coor card unit 4
+close unit 4
+
+! %% check stats of coordinates %% !
+coor stat 
+coor stat comp
+
+coor orient rms mass sele resid 600:744 end
+coor rms mass sele active end
+
+calc rmsact = ?rms
+
+!## I'm commenting this for now so that you can do trial runs
+!## when you increase the no of steps you need to uncomment
+! calc dincre = ( @rmsact - 1 ) / @stepref
+calc dincre = ( @rmsact - 1 ) / 106667
+
+!## Now fix the coordinates ##
+
+coor swap sele all end
+
+! %% check stats of coordinates %% !
+coor stat 
+coor stat comp
+
+!SOLVATION SETUP COMMAND
+! The nonbonded options below are part of the model
+
+
+
+eef1 setup temp 298.15 unit 93 name toppar/solvpar.inp
+update ctonnb 7. ctofnb 9. cutnb 10. group rdie
+
+!set k 1.0
+!cons harm bestfit mass force @k select segid prod end
+
+!# all TMD commands go here   
+OPEN UNIT 88 WRITE CARD NAME tmd-adp-grp94.dat
+
+TMDInitialize sele active end sele active end inrt 1000 ITMD 88   DINCRE @dincre
+ 
+!## make sure to use the same closed state here as you did above
+OPEN UNIT 1 FORM READ NAME @comp.crd 
+READ COOR CARD UNIT 1 TARG 
+CLOSE UNIT 1
+
+! %% check stats of coordinates %% !
+coor stat 
+coor stat comp
+
+shake bonh param tol 1.0e-8
+
+
+
+!This command prints out solvation free energy for each atom
+eef1 print
+
+! Set friction coefficient
+scalar fbeta set 2.0
+
+open unit 12 write form name tmd-grp94-adp-del-res
+open unit 13 write form name tmd-grp94-adp-del-kun
+open unit 14 write unform name tmd-grp94-adp-del-dcd
+
+
+!### see below - steps and saves are commented with smaller nos
+!### used for testing. need to uncomment for actual run and change
+!### the no of steps in the rms calculation above
+
+dynamics  strt              leap       langevin -
+!# nstep     1500000 -! The number of steps to be taken.
+ nstep     80000 -! The number of steps to be taken.
+ timest    0.001 -! Time step for dynamics in picoseconds.
+                 -!  The default value is 0.001 picoseconds.
+ iunread     -1  -! Fortran unit from which the dynamics restart
+                 -! file should be read. A value of -1 means don't
+                 -! read any file
+ iunwrite     12 -! Fortran unit on which the dynamics restart fil
+                 -! e for the present run is to be written. A valu
+                 -! e of -1 don't read any file. Formatted output.
+ firstt      298 -! The initial temperature at which the velociti
+                 -! es have to be assigned at to begin the dynami
+                 -! cs run. Important only for the initial stage
+                 -!of a dynamics run.
+ finalt      298 -! The desired final (equilibrium) temperature
+                 -! for the system. Important for all stages excep
+                 -! t initiation.
+ tstruc     298 -!The temperature at which the starting structure
+!                 -!has been equilibrated.  Used to assign velociti
+!                 -!es so that equal partition of energy will yield
+!                 -!the correct equilibrate temperature.  -999.
+!                 -! is a default which causes the program to
+!                 -!assign velocities at T=1.25*FIRSTT.
+ tconstant       -! false   Flag to indicate that constant
+                 -! temperature code will be used.
+ tcoupling  0.5  -! The coupling decay time in picoseconds for
+                 - !the- temperature. A good value for this is 5 ps
+ trefer      298 - !TREFerence FINALT The reference temperature for
+               - ! constant temperature  simulations.
+ inbfrq   -1   - ! 50 The frequency of regenerating the
+               - ! non-bonded list.  INBFRQ = -1 --> all lists
+               - ! are updated when necessary (heuristic test).
+ iprfrq   1000   - ! 100 The step frequency for calculating
+               - ! averages and rms fluctuations of the major
+               - ! energy values. If this number is less than
+               - ! NTRFRQ and NTRFRQ is not equal to 0, square
+               - !root of negative number errors will occur.
+ nprint   10000  -! 10     The step frequency for storing on KUNIT
+               -!as well as printing on unit 6, the energy data
+               -!of the dynamics run.
+!nprint   100000 -  
+!nsavc    100000 -
+!nsavv    100000 -  
+ nsavc    10000 -! 10 The step frequency for writing coordinates.
+ nsavv    10000 -!10 The step frequency for writing velocities.
+iuncrd   14   -! -1  Fortran unit on which the coordinates of the
+               -! dynamics ruN are to be saved. A value of -1 means
+               -! no coordinates should be written. Unformatted output.
+ iunvel  -1    -! -1 Fortran unit on which the velocities of the
+               -! dynamics run are to be saved. -1 means don't write.
+               -! Unformatted output.
+ wmin   1.50   -! !warning cutoff for minimum atom-atom distance
+ kunit    13   -!-1     Fortran unit on which the total energy and
+               -! some of its components along with the temperature
+               -! during the run are written using formatted output.
+ ihbfrq   0    -!50  The frequency of regenerating the hydrogen
+               -! bond list. Analogous to INBFRQ
+ ilbfrq   0    -! 50 The frequency for checking whether an atom is
+               -!  in the Langevin region, defined by RBUF, or not.
+ iasvel   1    -! assign velocity
+            -! the option for the choice of method for the
+            -! assignment of velocities during heating and
+            -! equilibration when IASORS is nonzero.  This option
+            -!  also controls the initial assignment of
+            -! velocities (when not RESTart) regardless of the
+            -! IASORS value.  .gt. 0 - gaussian distribution of
+            -! velocity. (+ve)
+ iasors   1 -! asssign or scale  0 scale not 0 assign
+ TIME -
+ echek 9999.9
+
+
+!#TMD is deactivated and the target coordinates are cleared after
+!# each DYNA command.
+!# Re-active TMD before doing a restart.
+
+
+
+
+open unit 19 write card name tmd-apo-grp94-del.crd
+write coor unit 19 card
+close unit 19
+
+!the command below is not equivalent to energy
+!inte sele all end
+
+
+stop

@@ -1,0 +1,392 @@
+* Charmm for implicit solvate apo HtpG
+*
+! if ?NUMNODE .gt. 1 then 
+! echo "Test NOT performed."
+! stop
+!endif
+if ?aspener .ne. 1 then
+echo "Test NOT performed."
+stop
+endif
+
+Bomlev -2
+set iseed1 1234
+set iseed2 2345
+set iseed3 8459
+set iseed4 5647
+
+open read card unit 3 name toph19_eef1.inp
+read rtf unit 3 card
+close unit 3
+
+open read card unit 3 name param19_eef1.inp
+read para unit 3 card
+close unit 3
+
+OPEN UNIT 1 FORM READ NAME grp94-dimer-apo-eef1.psf
+READ PSF CARD UNIT 1
+CLOSE UNIT 1
+
+OPEN UNIT 1 FORM READ NAME grp94-dimer-apo-eef1-min.cor
+READ COOR CARD UNIT 1
+CLOSE UNIT 1
+
+
+! IMPLICIT SOLVATION SETUP COMMAND
+! The nonbonded options below are part of the model
+
+eef1 setup temp 298.15 unit 93 name solvpar.inp
+update ctonnb 7. ctofnb 9. cutnb 10. group rdie
+
+!skip incl asp
+
+faster ON
+shake bonh param tol 1.0e-8
+
+
+! Set friction coefficient
+scalar fbeta set 5.0
+
+set k 1.0
+cons harm bestfit mass force @k sele all end
+
+
+open unit 12 write form name grp94-dimer-apo-eef1-min-hardrest.res
+open unit 13 write form name grp94-dimer-apo-eef1-min-hardrest.kun
+open unit 14 write unform name grp94-dimer-apo-eef1-min-hardrest.dcd
+
+
+dynamics  strt              leap       langevin -
+ nstep     100000 -! The number of steps to be taken.
+ timest    0.002 -! Time step for dynamics in picoseconds.
+                 -!  The default value is 0.001 picoseconds.
+ iunread     -1  -! Fortran unit from which the dynamics restart
+                 -! file should be read. A value of -1 means don't
+                 -! read any file
+ iunwrite      12 -! Fortran unit on which the dynamics restart fil
+                 -! e for the present run is to be written. A valu
+                 -! e of -1 don't read any file. Formatted output.
+ firstt      298 -! The initial temperature at which the velociti
+                 -! es have to be assigned at to begin the dynami
+                 -! cs run. Important only for the initial stage
+                 -!of a dynamics run.
+ finalt     298  -! The desired final (equilibrium) temperature
+                 -! for the system. Important for all stages excep
+                 -! t initiation.
+! tstruc   375   -!The temperature at which the starting structure
+!                 -!has been equilibrated.  Used to assign velociti
+!                 -!es so that equal partition of energy will yield
+!                 -!the correct equilibrate temperature.  -999.
+!                 -! is a default which causes the program to
+!                 -!assign velocities at T=1.25*FIRSTT.
+ tconstant       -! false   Flag to indicate that constant
+                 -! temperature code will be used.
+ tcoupling  0.5 -! The coupling decay time in picoseconds for
+               - !the- temperature. A good value for this is 5 ps
+ trefer   298  - !TREFerence FINALT The reference temperature for
+               - ! constant temperature  simulations.
+ inbfrq   -1   - ! 50 The frequency of regenerating the
+               - ! non-bonded list.  INBFRQ = -1 --> all lists
+               - ! are updated when necessary (heuristic test).
+ iprfrq   10   - ! 100 The step frequency for calculating
+               - ! averages and rms fluctuations of the major
+               - ! energy values. If this number is less than
+               - ! NTRFRQ and NTRFRQ is not equal to 0, square
+              - !root of negative number errors will occur.
+ nprint   1000  -! 10     The step frequency for storing on KUNIT
+               -!as well as printing on unit 6, the energy data
+               -!of the dynamics run.
+ nsavc    1000 -! 10 The step frequency for writing coordinates.
+ nsavv    1000 -!10 The step frequency for writing velocities.
+ iuncrd   14   -! -1  Fortran unit on which the coordinates of the
+               -! dynamics ruN are to be saved. A value of -1 means
+               -! no coordinates should be written. Unformatted output.
+ iunvel  -1    -! -1 Fortran unit on which the velocities of the
+               -! dynamics run are to be saved. -1 means don't write.
+               -! Unformatted output.
+ wmin   1.50   -! !warning cutoff for minimum atom-atom distance
+ kunit    13   -!-1     Fortran unit on which the total energy and
+               -! some of its components along with the temperature
+               -! during the run are written using formatted output.
+ ihbfrq   0    -!50  The frequency of regenerating the hydrogen
+               -! bond list. Analogous to INBFRQ
+ ilbfrq   0    -! 50 The frequency for checking whether an atom is
+               -!  in the Langevin region, defined by RBUF, or not.
+ iasvel   1    -! assign velocity
+            -! the option for the choice of method for the
+            -! assignment of velocities during heating and
+            -! equilibration when IASORS is nonzero.  This option
+            -!  also controls the initial assignment of
+            -! velocities (when not RESTart) regardless of the
+            -! IASORS value.  .gt. 0 - gaussian distribution of
+            -! velocity. (+ve)
+ iasors   1 -! asssign or scale  0 scale not 0 assign
+ iseed    @iseed1
+
+
+          
+
+open unit 19 write card name grp94-dimer-apo-eef1-min-hardrest.cor
+write coor unit 19 card
+close unit 19
+
+open unit 20 write card name grp94-dimer-apo-eef1-min-hardrest.pdb
+write coor  pdb unit 20 card
+
+set k 0.1
+cons harm bestfit mass force @k sele all end
+
+
+open unit 12 write form name grp94-dimer-apo-eef1-min-modrest.res
+open unit 13 write form name grp94-dimer-apo-eef1-min-modrest.kun
+open unit 14 write unform name grp94-dimer-apo-eef1-min-modrest.dcd
+
+
+dynamics  strt              leap       langevin -
+ nstep     100000 -! The number of steps to be taken.
+ timest    0.002 -! Time step for dynamics in picoseconds.
+                 -!  The default value is 0.001 picoseconds.
+ iunread     -1  -! Fortran unit from which the dynamics restart
+                 -! file should be read. A value of -1 means don't
+                 -! read any file
+ iunwrite      12 -! Fortran unit on which the dynamics restart fil
+                 -! e for the present run is to be written. A valu
+                 -! e of -1 don't read any file. Formatted output.
+ firstt      298 -! The initial temperature at which the velociti
+                 -! es have to be assigned at to begin the dynami
+                 -! cs run. Important only for the initial stage
+                 -!of a dynamics run.
+ finalt     298  -! The desired final (equilibrium) temperature
+                 -! for the system. Important for all stages excep
+                 -! t initiation.
+! tstruc   375   -!The temperature at which the starting structure
+!                 -!has been equilibrated.  Used to assign velociti
+!                 -!es so that equal partition of energy will yield
+!                 -!the correct equilibrate temperature.  -999.
+!                 -! is a default which causes the program to
+!                 -!assign velocities at T=1.25*FIRSTT.
+ tconstant       -! false   Flag to indicate that constant
+                 -! temperature code will be used.
+ tcoupling  0.5 -! The coupling decay time in picoseconds for
+               - !the- temperature. A good value for this is 5 ps
+ trefer   298  - !TREFerence FINALT The reference temperature for
+               - ! constant temperature  simulations.
+ inbfrq   -1   - ! 50 The frequency of regenerating the
+               - ! non-bonded list.  INBFRQ = -1 --> all lists
+               - ! are updated when necessary (heuristic test).
+ iprfrq   10   - ! 100 The step frequency for calculating
+               - ! averages and rms fluctuations of the major
+               - ! energy values. If this number is less than
+               - ! NTRFRQ and NTRFRQ is not equal to 0, square
+              - !root of negative number errors will occur.
+ nprint   1000  -! 10     The step frequency for storing on KUNIT
+               -!as well as printing on unit 6, the energy data
+               -!of the dynamics run.
+ nsavc    1000 -! 10 The step frequency for writing coordinates.
+ nsavv    1000 -!10 The step frequency for writing velocities.
+ iuncrd   14   -! -1  Fortran unit on which the coordinates of the
+               -! dynamics ruN are to be saved. A value of -1 means
+               -! no coordinates should be written. Unformatted output.
+ iunvel  -1    -! -1 Fortran unit on which the velocities of the
+               -! dynamics run are to be saved. -1 means don't write.
+               -! Unformatted output.
+ wmin   1.50   -! !warning cutoff for minimum atom-atom distance
+ kunit    13   -!-1     Fortran unit on which the total energy and
+               -! some of its components along with the temperature
+               -! during the run are written using formatted output.
+ ihbfrq   0    -!50  The frequency of regenerating the hydrogen
+               -! bond list. Analogous to INBFRQ
+ ilbfrq   0    -! 50 The frequency for checking whether an atom is
+               -!  in the Langevin region, defined by RBUF, or not.
+ iasvel   1    -! assign velocity
+            -! the option for the choice of method for the
+            -! assignment of velocities during heating and
+            -! equilibration when IASORS is nonzero.  This option
+            -!  also controls the initial assignment of
+            -! velocities (when not RESTart) regardless of the
+            -! IASORS value.  .gt. 0 - gaussian distribution of
+            -! velocity. (+ve)
+ iasors   1 -! asssign or scale  0 scale not 0 assign
+ iseed    @iseed2
+
+
+
+
+open unit 19 write card name grp94-dimer-apo-eef1-min-modrest.cor
+write coor unit 19 card
+close unit 19
+
+open unit 20 write card name grp94-dimer-apo-eef1-min-modrest.pdb
+write coor  pdb unit 20 card
+
+set k 0.01
+cons harm bestfit mass force @k sele all end
+
+
+open unit 12 write form name grp94-dimer-apo-eef1-min-weakrest.res
+open unit 13 write form name grp94-dimer-apo-eef1-min-weakrest.kun
+open unit 14 write unform name grp94-dimer-apo-eef1-min-weakrest.dcd
+
+
+dynamics  strt              leap       langevin -
+ nstep     100000 -! The number of steps to be taken.
+ timest    0.002 -! Time step for dynamics in picoseconds.
+                 -!  The default value is 0.001 picoseconds.
+ iunread     -1  -! Fortran unit from which the dynamics restart
+                 -! file should be read. A value of -1 means don't
+                 -! read any file
+ iunwrite      12 -! Fortran unit on which the dynamics restart fil
+                 -! e for the present run is to be written. A valu
+                 -! e of -1 don't read any file. Formatted output.
+ firstt      298 -! The initial temperature at which the velociti
+                 -! es have to be assigned at to begin the dynami
+                 -! cs run. Important only for the initial stage
+                 -!of a dynamics run.
+ finalt     298  -! The desired final (equilibrium) temperature
+                 -! for the system. Important for all stages excep
+                 -! t initiation.
+! tstruc   375   -!The temperature at which the starting structure
+!                 -!has been equilibrated.  Used to assign velociti
+!                 -!es so that equal partition of energy will yield
+!                 -!the correct equilibrate temperature.  -999.
+!                 -! is a default which causes the program to
+!                 -!assign velocities at T=1.25*FIRSTT.
+ tconstant       -! false   Flag to indicate that constant
+                 -! temperature code will be used.
+ tcoupling  0.5 -! The coupling decay time in picoseconds for
+               - !the- temperature. A good value for this is 5 ps
+ trefer   298  - !TREFerence FINALT The reference temperature for
+               - ! constant temperature  simulations.
+ inbfrq   -1   - ! 50 The frequency of regenerating the
+               - ! non-bonded list.  INBFRQ = -1 --> all lists
+               - ! are updated when necessary (heuristic test).
+ iprfrq   10   - ! 100 The step frequency for calculating
+               - ! averages and rms fluctuations of the major
+               - ! energy values. If this number is less than
+               - ! NTRFRQ and NTRFRQ is not equal to 0, square
+              - !root of negative number errors will occur.
+nprint   1000  -! 10     The step frequency for storing on KUNIT
+               -!as well as printing on unit 6, the energy data
+               -!of the dynamics run.
+ nsavc    1000 -! 10 The step frequency for writing coordinates.
+ nsavv    1000 -!10 The step frequency for writing velocities.
+ iuncrd   14   -! -1  Fortran unit on which the coordinates of the
+               -! dynamics ruN are to be saved. A value of -1 means
+               -! no coordinates should be written. Unformatted output.
+ iunvel  -1    -! -1 Fortran unit on which the velocities of the
+               -! dynamics run are to be saved. -1 means don't write.
+               -! Unformatted output.
+ wmin   1.50   -! !warning cutoff for minimum atom-atom distance
+ kunit    13   -!-1     Fortran unit on which the total energy and
+               -! some of its components along with the temperature
+               -! during the run are written using formatted output.
+ ihbfrq   0    -!50  The frequency of regenerating the hydrogen
+               -! bond list. Analogous to INBFRQ
+ ilbfrq   0    -! 50 The frequency for checking whether an atom is
+               -!  in the Langevin region, defined by RBUF, or not.
+ iasvel   1    -! assign velocity
+            -! the option for the choice of method for the
+            -! assignment of velocities during heating and
+            -! equilibration when IASORS is nonzero.  This option
+            -!  also controls the initial assignment of
+            -! velocities (when not RESTart) regardless of the
+            -! IASORS value.  .gt. 0 - gaussian distribution of
+            -! velocity. (+ve)
+ iasors   1 -! asssign or scale  0 scale not 0 assign
+ iseed    @iseed3
+
+
+
+
+open unit 19 write card name grp94-dimer-apo-eef1-min-weakrest.cor
+write coor unit 19 card
+close unit 19
+
+open unit 20 write card name grp94-dimer-apo-eef1-min-weakrest.pdb
+write coor  pdb unit 20 card
+
+set k 0
+cons harm bestfit mass force @k sele all end
+
+open unit 12 write form name grp94-dimer-apo-eef1-min-norest.res
+open unit 13 write form name grp94-dimer-apo-eef1-min-norest.kun
+open unit 14 write unform name grp94-dimer-apo-eef1-min-norest.dcd
+
+
+dynamics  strt              leap       langevin -
+ nstep     100000 -! The number of steps to be taken.
+ timest    0.002 -! Time step for dynamics in picoseconds.
+                 -!  The default value is 0.001 picoseconds.
+ iunread     -1  -! Fortran unit from which the dynamics restart
+                 -! file should be read. A value of -1 means don't
+                 -! read any file
+ iunwrite      12 -! Fortran unit on which the dynamics restart fil
+                 -! e for the present run is to be written. A valu
+                 -! e of -1 don't read any file. Formatted output.
+ firstt      298 -! The initial temperature at which the velociti
+                 -! es have to be assigned at to begin the dynami
+                 -! cs run. Important only for the initial stage
+                 -!of a dynamics run.
+ finalt     298  -! The desired final (equilibrium) temperature
+                 -! for the system. Important for all stages excep
+                 -! t initiation.
+! tstruc   375   -!The temperature at which the starting structure
+!                 -!has been equilibrated.  Used to assign velociti
+!                 -!es so that equal partition of energy will yield
+!                 -!the correct equilibrate temperature.  -999.
+!                 -! is a default which causes the program to
+!                 -!assign velocities at T=1.25*FIRSTT.
+tconstant       -! false   Flag to indicate that constant
+                 -! temperature code will be used.
+ tcoupling  0.5 -! The coupling decay time in picoseconds for
+               - !the- temperature. A good value for this is 5 ps
+ trefer   298  - !TREFerence FINALT The reference temperature for
+               - ! constant temperature  simulations.
+ inbfrq   -1   - ! 50 The frequency of regenerating the
+               - ! non-bonded list.  INBFRQ = -1 --> all lists
+               - ! are updated when necessary (heuristic test).
+ iprfrq   10   - ! 100 The step frequency for calculating
+               - ! averages and rms fluctuations of the major
+               - ! energy values. If this number is less than
+               - ! NTRFRQ and NTRFRQ is not equal to 0, square
+              - !root of negative number errors will occur.
+ nprint   1000  -! 10     The step frequency for storing on KUNIT
+               -!as well as printing on unit 6, the energy data
+               -!of the dynamics run.
+ nsavc    1000 -! 10 The step frequency for writing coordinates.
+ nsavv    1000 -!10 The step frequency for writing velocities.
+ iuncrd   14   -! -1  Fortran unit on which the coordinates of the
+               -! dynamics ruN are to be saved. A value of -1 means
+               -! no coordinates should be written. Unformatted output.
+ iunvel  -1    -! -1 Fortran unit on which the velocities of the
+               -! dynamics run are to be saved. -1 means don't write.
+               -! Unformatted output.
+ wmin   1.50   -! !warning cutoff for minimum atom-atom distance
+ kunit    13   -!-1     Fortran unit on which the total energy and
+               -! some of its components along with the temperature
+               -! during the run are written using formatted output.
+ ihbfrq   0    -!50  The frequency of regenerating the hydrogen
+               -! bond list. Analogous to INBFRQ
+ ilbfrq   0    -! 50 The frequency for checking whether an atom is
+               -!  in the Langevin region, defined by RBUF, or not.
+ iasvel   1    -! assign velocity
+            -! the option for the choice of method for the
+            -! assignment of velocities during heating and
+            -! equilibration when IASORS is nonzero.  This option
+            -!  also controls the initial assignment of
+            -! velocities (when not RESTart) regardless of the
+            -! IASORS value.  .gt. 0 - gaussian distribution of
+            -! velocity. (+ve)
+ iasors   1 -! asssign or scale  0 scale not 0 assign
+ iseed    @iseed4
+
+open unit 19 write card name grp94-dimer-apo-eef1-min-norest.cor
+write coor unit 19 card
+close unit 19
+
+open unit 20 write card name grp94-dimer-apo-eef1-min-norest.pdb
+write coor  pdb unit 20 card
+
+
+
+stop

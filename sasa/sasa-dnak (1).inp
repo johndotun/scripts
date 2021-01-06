@@ -1,0 +1,72 @@
+* Charmm script to read pdb file for hslu
+*
+bomblev -1
+set paramdir /home/kravatan/charmm_files/c36b2/toppar/
+
+open unit 1 read form name @paramdir/top_all27_prot_na.rtf
+read rtf card unit 1
+close unit 1
+
+open unit 1 read form name @paramdir/par_all27_prot_na.prm
+read param card unit 1
+close unit 1
+
+ open unit 1 read card name clpb-dnak.psf
+ read psf card unit 1
+ close unit 1
+
+open unit 2 read card name clpb-dnak.@num.cor 
+read coor card unit 2  
+close unit 2
+
+
+prnlev 4
+wrnlev 2
+
+open write unit 13 card name sasa.detailed.dnak.@num.dat
+write title unit 13   
+*# sasa values for clpb hsp70
+* 
+
+
+
+define clpb sele segid A .or. segid B .or. segid C end
+define KE sele segid D .or. segid X .or. segid Y .or. segid J -
+ .or. segid K end
+define m1 sele segid A .and. resid 405 : 530 end
+define m2 sele segid B .and. resid 405 : 530 end
+define m3 sele segid C .and. resid 405 : 530 end
+define smut sele resid 443 : 447 .and. (segid A .or.  -
+segid B .or. segid C ) end
+define defmut sele resid 438 : 440 .and. (segid A .or. -
+segid B .or. segid C ) end
+define ndom sele (segid A .or. segid B .or. segid C) .and. -
+resid 4 : 148 end
+define 1a sele segid D .and. (resid 1 : 37 .or. resid 120 : 171 ) end
+define 1b sele segid D .and. resid 38 : 119 end
+define 2a sele segid D .and. (resid 171 : 227 .or. resid 311 : 368) end
+define 2b sele segid D .and. resid 228 : 310 end
+define allm sele m1 .or. m2 .or. m3 end
+define dnak sele segid D end
+
+coor surf acce RPRObe 1.4 sele all end
+
+
+set aa 1 
+label aaloop
+
+
+scalar wmain statistics sele resid @aa .and. segid D end 
+set sasam1 ?STOT
+
+write title unit 13
+* @aa @sasam1 
+
+incr aa by 1
+if @aa .le. 605 goto aaloop
+
+STOP
+
+
+
+
